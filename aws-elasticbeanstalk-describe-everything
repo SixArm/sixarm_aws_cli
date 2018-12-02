@@ -1,0 +1,121 @@
+#!/bin/sh
+
+##
+# aws-elasticbeanstalk-describe-everything
+#
+# Syntax:
+#
+#     aws-elasticbeanstalk-describe-everythin
+#
+# Syntax with AWS_PROFILE:
+#
+#     AWS_PROFILE="demo" aws-elasticbeanstalk-describe-everything
+#
+# Example:
+#
+#     $ aws-elasticbeanstalk-describe-everything
+#
+# This queries Amazon Web Service (AWS) Elastic Beanstalk (EB)
+# for everything that's available about the profile's beanstalk:
+#
+#   * Applications
+#   * Application versions
+#   * Environments
+#   * Platforms
+#   * Account attributes
+#
+# This script is based on AWS EB documentation as of 2018-12-01.
+##
+
+# https://github.com/SixArm/sixarm-unix-shell-functions
+out() { printf %s\\n "$*" ; }
+err() { >&2 printf %s\\n "$*" ; }
+die() { >&2 printf %s\\n "$*" ; exit 1 ; }
+big() { printf \\n###\\n#\\n#\ %s\\n#\\n###\\n\\n "$*"; }
+cmd() { command -v $1 >/dev/null 2>&1 ; }
+
+preflight(){
+  AWS_PROFILE=${AWS_PROFILE:-default}
+  cmd aws || die "Command 'aws' is missing; try https://aws.amazon.com/cli/"
+  cmd jq || die "Command 'jq' is missing; try https://stedolan.github.io/jq/" 
+}
+
+do_beanstalk(){
+  big "Applications"
+  aws --profile "$AWS_PROFILE" elasticbeanstalk describe-applications
+
+  big "Application Versions"
+  aws --profile "$AWS_PROFILE" elasticbeanstalk describe-application-versions
+
+  big "Environments"
+  aws --profile "$AWS_PROFILE" elasticbeanstalk describe-environments
+
+  big "Platforms"
+  aws --profile "$AWS_PROFILE" elasticbeanstalk describe-environments |
+  jq -r '[.Environments[].PlatformArn] | unique[]'
+
+  big "Account Attributes"
+  aws --profile "$AWS_PROFILE" elasticbeanstalk describe-account-attributes
+
+  big "Events"
+  aws --profile "$AWS_PROFILE" elasticbeanstalk describe-events
+}
+
+do_environments(){
+  for name in $(aws --profile "$AWS_PROFILE" elasticbeanstalk describe-environments | jq -r '.Environments[].EnvironmentName'); do
+    do_environment $name 
+  done
+}
+  
+do_environment(){
+  name="$1"
+  big "Environment:$name - Environment Health"
+  aws --profile "$AWS_PROFILE" elasticbeanstalk describe-environment-health --environment-name "$name" --attribute-names All
+
+  big "Environment:$name - Instances Health"
+  aws --profile "$AWS_PROFILE" elasticbeanstalk describe-instances-health --environment-name "$name" --attribute-names All
+
+  big "Environment:$name - Environment Resources" 
+  aws --profile "$AWS_PROFILE" elasticbeanstalk describe-environment-resources --environment-name "$name"
+
+  big "Environment:$name - Environment Managed Actions"
+  aws --profile "$AWS_PROFILE" elasticbeanstalk describe-environment-managed-actions --environment-name "$name"
+ 
+  big "Environment:$name - Environment Managed Action History - max items 10"
+  aws --profile "$AWS_PROFILE" elasticbeanstalk describe-environment-managed-action-history --environment-name "$name" --max-items 10
+}
+
+do_platforms(){
+  for name in $(aws --profile "$AWS_PROFILE" elasticbeanstalk describe-environments | jq -r '[.Environments[].PlatformArn] | unique[]'); do
+    do_platform $name
+  done
+}
+
+do_platform(){
+  name="$1"
+  big "Platform:$name - Platform Version"
+  aws --profile "$AWS_PROFILE" elasticbeanstalk describe-platform-version --platform-arn "$name"
+}
+
+do_applications(){
+  for name in $(aws --profile "$AWS_PROFILE" elasticbeanstalk describe-applications | jq -r '.Applications[].ApplicationName'); do 
+    do_application $name
+  done
+}
+
+do_application(){
+  name="$1"
+  big "Application:$name - Application Version"
+  aws --profile "$AWS_PROFILE" elasticbeanstalk describe-application-versions --application-name "$name"
+}
+
+main(){
+  preflight
+  big "AWS Elastic Beanstalk - describe everything - profile $AWS_PROFILE"
+  do_beanstalk
+  do_environments
+  do_platforms
+  do_applications
+}
+
+main
