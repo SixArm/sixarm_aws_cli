@@ -1,1 +1,20 @@
-sed -n 's/^\[\(.*\)\] */\1/p' ~/.aws/credentials
+#!/bin/sh
+
+##
+# Print AWS profile names of the current user and of typical file locations.,
+#
+# This script looks for profiles in two typical AWS configuration files:
+#
+#   * ~/.aws/config
+#   * ~/.aws/credentials
+#
+# This script prints all the profiles found in `config`,
+# then any additonal profiles found in `crendentials`.
+#
+# The profile names are printed in the order they appear in the file.
+# If a profile name is listed more than once, such as in both `config`
+# and `credentials`, then this script prints just the first occurance.
+##
+
+sed -n 's/^\[\(profile \)\?\(.*\)\] */\2/p' ~/.aws/config ~/.aws/credentials |
+awk '{if (!($1 in a)){ print $1; a[$1]=1 };}'
