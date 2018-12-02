@@ -7,10 +7,6 @@
 #
 #     aws-elasticbeanstalk-describe-health
 #
-# Syntax with AWS_PROFILE:
-#
-#     AWS_PROFILE="demo" aws-elasticbeanstalk-describe-health
-#
 # Example:
 #
 #     $ aws-elasticbeanstalk-describe-health
@@ -29,22 +25,21 @@ big() { printf \\n###\\n#\\n#\ %s\\n#\\n###\\n\\n "$*"; }
 cmd() { command -v $1 >/dev/null 2>&1 ; }
 
 preflight(){
-  AWS_PROFILE=${AWS_PROFILE:-default}
   cmd aws || die "Command 'aws' is missing; try https://aws.amazon.com/cli/"
   cmd jq || die "Command 'jq' is missing; try https://stedolan.github.io/jq/"
 }
 
 do_environments(){
-  for name in $(aws --profile "$AWS_PROFILE" elasticbeanstalk describe-environments | jq -r '.Environments[].EnvironmentName'); do
+  for name in $(aws elasticbeanstalk describe-environments | jq -r '.Environments[].EnvironmentName'); do
     do_environment $name 
   done
 }
 
 do_environment(){
   big "Environment:$name - Environment Health"
-  aws --profile "$AWS_PROFILE" elasticbeanstalk describe-environment-health --environment-name "$name" --attribute-names All
+  aws elasticbeanstalk describe-environment-health --environment-name "$name" --attribute-names All
   big "Environment:$name - Instances Health"
-  aws --profile "$AWS_PROFILE" elasticbeanstalk describe-instances-health --environment-name "$name" --attribute-names All
+  aws elasticbeanstalk describe-instances-health --environment-name "$name" --attribute-names All
 }
 
 main(){

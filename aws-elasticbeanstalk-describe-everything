@@ -7,10 +7,6 @@
 #
 #     aws-elasticbeanstalk-describe-everythin
 #
-# Syntax with AWS_PROFILE:
-#
-#     AWS_PROFILE="demo" aws-elasticbeanstalk-describe-everything
-#
 # Example:
 #
 #     $ aws-elasticbeanstalk-describe-everything
@@ -35,7 +31,6 @@ big() { printf \\n###\\n#\\n#\ %s\\n#\\n###\\n\\n "$*"; }
 cmd() { command -v $1 >/dev/null 2>&1 ; }
 
 preflight(){
-  AWS_PROFILE=${AWS_PROFILE:-default}
   cmd aws || die "Command 'aws' is missing; try https://aws.amazon.com/cli/"
   cmd jq || die "Command 'jq' is missing; try https://stedolan.github.io/jq/" 
 }
@@ -45,24 +40,24 @@ do_beanstalk(){
   aws --profile "$AWS_PROFILE" elasticbeanstalk describe-applications
 
   big "Application Versions"
-  aws --profile "$AWS_PROFILE" elasticbeanstalk describe-application-versions
+  aws elasticbeanstalk describe-application-versions
 
   big "Environments"
-  aws --profile "$AWS_PROFILE" elasticbeanstalk describe-environments
+  aws elasticbeanstalk describe-environments
 
   big "Platforms"
-  aws --profile "$AWS_PROFILE" elasticbeanstalk describe-environments |
+  aws elasticbeanstalk describe-environments |
   jq -r '[.Environments[].PlatformArn] | unique[]'
 
   big "Account Attributes"
-  aws --profile "$AWS_PROFILE" elasticbeanstalk describe-account-attributes
+  aws elasticbeanstalk describe-account-attributes
 
   big "Events"
-  aws --profile "$AWS_PROFILE" elasticbeanstalk describe-events
+  aws elasticbeanstalk describe-events
 }
 
 do_environments(){
-  for name in $(aws --profile "$AWS_PROFILE" elasticbeanstalk describe-environments | jq -r '.Environments[].EnvironmentName'); do
+  for name in $(aws elasticbeanstalk describe-environments | jq -r '.Environments[].EnvironmentName'); do
     do_environment $name 
   done
 }
@@ -70,23 +65,23 @@ do_environments(){
 do_environment(){
   name="$1"
   big "Environment:$name - Environment Health"
-  aws --profile "$AWS_PROFILE" elasticbeanstalk describe-environment-health --environment-name "$name" --attribute-names All
+  aws elasticbeanstalk describe-environment-health --environment-name "$name" --attribute-names All
 
   big "Environment:$name - Instances Health"
-  aws --profile "$AWS_PROFILE" elasticbeanstalk describe-instances-health --environment-name "$name" --attribute-names All
+  aws elasticbeanstalk describe-instances-health --environment-name "$name" --attribute-names All
 
   big "Environment:$name - Environment Resources" 
-  aws --profile "$AWS_PROFILE" elasticbeanstalk describe-environment-resources --environment-name "$name"
+  aws elasticbeanstalk describe-environment-resources --environment-name "$name"
 
   big "Environment:$name - Environment Managed Actions"
-  aws --profile "$AWS_PROFILE" elasticbeanstalk describe-environment-managed-actions --environment-name "$name"
+  aws elasticbeanstalk describe-environment-managed-actions --environment-name "$name"
  
   big "Environment:$name - Environment Managed Action History - max items 10"
-  aws --profile "$AWS_PROFILE" elasticbeanstalk describe-environment-managed-action-history --environment-name "$name" --max-items 10
+  aws elasticbeanstalk describe-environment-managed-action-history --environment-name "$name" --max-items 10
 }
 
 do_platforms(){
-  for name in $(aws --profile "$AWS_PROFILE" elasticbeanstalk describe-environments | jq -r '[.Environments[].PlatformArn] | unique[]'); do
+  for name in $(aws elasticbeanstalk describe-environments | jq -r '[.Environments[].PlatformArn] | unique[]'); do
     do_platform $name
   done
 }
@@ -94,11 +89,11 @@ do_platforms(){
 do_platform(){
   name="$1"
   big "Platform:$name - Platform Version"
-  aws --profile "$AWS_PROFILE" elasticbeanstalk describe-platform-version --platform-arn "$name"
+  aws elasticbeanstalk describe-platform-version --platform-arn "$name"
 }
 
 do_applications(){
-  for name in $(aws --profile "$AWS_PROFILE" elasticbeanstalk describe-applications | jq -r '.Applications[].ApplicationName'); do 
+  for name in $(aws elasticbeanstalk describe-applications | jq -r '.Applications[].ApplicationName'); do 
     do_application $name
   done
 }
@@ -106,7 +101,7 @@ do_applications(){
 do_application(){
   name="$1"
   big "Application:$name - Application Version"
-  aws --profile "$AWS_PROFILE" elasticbeanstalk describe-application-versions --application-name "$name"
+  aws elasticbeanstalk describe-application-versions --application-name "$name"
 }
 
 main(){
