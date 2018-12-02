@@ -10,6 +10,7 @@
 # Example:
 #
 #     $ aws-elasticbeanstalk-describe-everything
+#     ... lots of sections of JSON responses ...
 #
 # This queries Amazon Web Service (AWS) Elastic Beanstalk (EB)
 # for everything that's available about the profile's beanstalk:
