@@ -1,7 +1,7 @@
 #!/bin/sh
 
 ##
-# AWS EC2 describe-images for Canonica Ubuntu
+# AWS EC2 describe-images for Canonical Ubuntu
 #
 # We want to create a new EC2 instance by using 
 # the current long term release of Ubuntu by Canonical.
