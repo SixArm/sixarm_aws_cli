@@ -1,1 +1,4 @@
+#!/bin/sh
+set -euf
+
 printf %s\\n ${AWS_PROFILE:-default}

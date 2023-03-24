@@ -1,4 +1,5 @@
 #!/bin/sh
+set -euf
 
 ##
 # AWS EC2 describe-images for Canonical Ubuntu

@@ -1,4 +1,5 @@
 #!/bin/sh
+set -euf
 
 ##
 # Print AWS profile names of the current user and of typical file locations.,

@@ -1,4 +1,5 @@
 #!/bin/sh
+set -euf
 
 ##
 # Use AWS Route 53 list hosted zones by name,

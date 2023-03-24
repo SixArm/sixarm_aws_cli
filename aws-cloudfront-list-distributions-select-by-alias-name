@@ -1,4 +1,5 @@
 #!/bin/sh
+set -euf
 
 ##
 # Use AWS Cloudfront list distributions,
