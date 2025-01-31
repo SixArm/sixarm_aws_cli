@@ -1,0 +1,91 @@
+#!/bin/bash
+
+##
+# aws-vpc-dependency-diagnosis
+#
+# Call a bunch of AWS VPC-related endpoints,
+# to find out what's happening with them.
+#
+# Syntax:
+#
+#     aws-vpc-dependency-diagnosis
+#
+# Necessary environment variables:
+#
+#   * AWS_ACCESS_KEY_ID
+#   * AWS_SECRET_ACCESS_KEY
+#   * AWS_REGION
+#   * AWS_VPC_ID
+##
+set -euf
+set +x
+
+aws ec2 describe-internet-gateways \
+--region "$AWS_REGION" \
+--filters "Name=attachment.vpc-id,Values=$AWS_VPC_ID" | \
+grep InternetGatewayId | sed 's/^ *//'
+
+aws ec2 describe-subnets \
+--region "$AWS_REGION" \
+--filters "Name=vpc-id,Values=$AWS_VPC_ID" | \
+grep SubnetId | sed 's/^ *//'
+
+aws ec2 describe-route-tables \
+--region "$AWS_REGION" \
+--filters "Name=vpc-id,Values=$AWS_VPC_ID" | \
+grep RouteTableId | sed 's/^ *//'
+
+aws ec2 describe-network-acls \
+--region "$AWS_REGION" \
+--filters "Name=vpc-id,Values=$AWS_VPC_ID" | \
+grep NetworkAclId | sed 's/^ *//'
+
+aws ec2 describe-vpc-peering-connections \
+--region "$AWS_REGION" \
+--filters "Name=requester-vpc-info.vpc-id,Values=$AWS_VPC_ID" | \
+grep VpcPeeringConnectionId | sed 's/^ *//'
+
+aws ec2 describe-vpc-endpoints \
+--region "$AWS_REGION" \
+--filters "Name=vpc-id,Values=$AWS_VPC_ID" | \
+grep VpcEndpointId | sed 's/^ *//'
+
+aws ec2 describe-nat-gateways \
+--region "$AWS_REGION" \
+--filter "Name=vpc-id,Values=$AWS_VPC_ID" | \
+grep NatGatewayId | sed 's/^ *//'
+
+aws ec2 describe-security-groups \
+--region "$AWS_REGION" \
+--filters "Name=vpc-id,Values=$AWS_VPC_ID" | \
+grep GroupId | sed 's/^ *//'
+
+aws ec2 describe-instances \
+--region "$AWS_REGION" \
+--filters "Name=vpc-id,Values=$AWS_VPC_ID" | \
+grep InstanceId | sed 's/^ *//'
+
+aws ec2 describe-vpn-gateways \
+--region "$AWS_REGION" \
+--filters "Name=attachment.vpc-id,Values=$AWS_VPC_ID" | \
+grep VpnGatewayId | sed 's/^ *//'
+
+aws ec2 describe-network-interfaces \
+--region "$AWS_REGION" \
+--filters "Name=vpc-id,Values=$AWS_VPC_ID" | \
+grep NetworkInterfaceId | sed 's/^ *//'
+
+aws ec2 describe-carrier-gateways \
+--region "$AWS_REGION" \
+--filters "Name=vpc-id,Values=$AWS_VPC_ID" | \
+grep CarrierGatewayId | sed 's/^ *//'
+
+aws ec2 describe-local-gateway-route-table-vpc-associations \
+--region "$AWS_REGION" \
+--filters "Name=vpc-id,Values=$AWS_VPC_ID" | \
+grep LocalGatewayRouteTableVpcAssociationId | sed 's/^ *//'
+
+aws ec2 describe-vpc-peering-connections \
+--region "$AWS_REGION" \
+--filters "Name=accepter-vpc-info.vpc-id,Values=$AWS_VPC_ID" | \
+grep VpcPeeringConnectionId | sed 's/^ *//'
