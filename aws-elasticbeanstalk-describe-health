@@ -18,16 +18,12 @@
 # This script is based on AWS EB documentation as of 2018-12-01.
 ##
 
-# https://github.com/SixArm/sixarm-unix-shell-functions
-out() { printf %s\\n "$*" ; }
-err() { >&2 printf %s\\n "$*" ; }
-die() { >&2 printf %s\\n "$*" ; exit 1 ; }
-big() { printf \\n###\\n#\\n#\ %s\\n#\\n###\\n\\n "$*"; }
-cmd() { command -v $1 >/dev/null 2>&1 ; }
+# # Include https://github.com/SixArm/posix-shell-script-kit
+. "$(dirname "$(readlink -f "$0")")/posix-shell-script-kit"
 
 preflight(){
-  cmd aws || die "Command 'aws' is missing; try https://aws.amazon.com/cli/"
-  cmd jq || die "Command 'jq' is missing; try https://stedolan.github.io/jq/"
+  command_exists_or_die aws
+  command_exists_or_die jq
 }
 
 do_environments(){
